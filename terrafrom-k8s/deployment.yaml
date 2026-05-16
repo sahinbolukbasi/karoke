@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-deployment
+  namespace: development
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+  spec:
+    containers:
+    - name: web-app
+      image: <kullanici-adiniz>/test-app:v1 # Docker Hub'daki imajınız
+      ports:
+      - containerPort: 80
