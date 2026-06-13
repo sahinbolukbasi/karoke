@@ -7,7 +7,7 @@ import {
   generateCodeChallenge,
   generateCodeVerifier,
   parseCodeFromUrl,
-} from "@/lib/spotify";
+} from "../lib/spotify";
 
 const TOKEN_STORAGE_KEY = "karaoke_spotify_token";
 const EXPIRY_STORAGE_KEY = "karaoke_spotify_expiry";
