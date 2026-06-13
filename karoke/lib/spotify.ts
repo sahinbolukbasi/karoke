@@ -1,4 +1,4 @@
-import { SpotifyTrack } from "@/types/karaoke";
+import { SpotifyTrack } from "../types/karaoke";
 
 const SPOTIFY_ACCOUNTS_URL = "https://accounts.spotify.com/authorize";
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
