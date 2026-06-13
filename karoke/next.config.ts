@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   basePath: isGithubActions && repositoryName ? `/${repositoryName}` : "",
   assetPrefix: isGithubActions && repositoryName ? `/${repositoryName}/` : "",
+  outputFileTracingRoot: process.cwd(),
   turbopack: {
     root: process.cwd(),
   },
