@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { useKaraokeContext } from "@/components/KaraokeContext";
 import { searchSpotifyTracks } from "@/lib/spotify";
 import { SpotifyTrack } from "@/types/karaoke";
@@ -38,148 +39,220 @@ export default function SelectPage() {
     }
   };
 
+  const handleAdd = () => {
+    addParticipant(newName);
+    setNewName("");
+  };
+
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Adim 2</p>
-        <h1 className="mt-2 text-3xl">Sarki Secimi ve Katilimcilar</h1>
-        <p className="mt-2 text-sm text-zinc-400">Spotify&apos;da ara, katilimcini belirle, sarkini sec.</p>
-      </motion.div>
-
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        {/* Lobby */}
-        <motion.section
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-3xl border border-white/20 bg-[#121212] p-5"
+    <div className="relative">
+      <div className="bg-mesh" />
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-12">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          <h2 className="text-xl">Katilimcilar ve Sira</h2>
-          <div className="mt-4 flex gap-2">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Isim ekle"
-              className="w-full rounded-xl border border-white/25 bg-black px-3 py-2 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white"
-            />
-            <button
-              onClick={() => {
-                addParticipant(newName);
-                setNewName("");
-              }}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black"
-            >
-              Ekle
-            </button>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-400 backdrop-blur-sm">
+            Adım 2
           </div>
-          <ul className="mt-4 space-y-2">
-            {queue.map((p, i) => (
-              <li
-                key={p.id}
-                className="flex items-center justify-between rounded-xl bg-black px-3 py-2 text-sm"
-              >
-                <span>
-                  {i + 1}. {p.name}
-                </span>
-                <div className="flex gap-2">
-                  {i > 0 && (
-                    <button
-                      onClick={() => moveQueue(p.id, -1)}
-                      className="rounded-md border border-white/25 bg-zinc-900 px-2 py-1 text-xs hover:bg-zinc-700"
-                    >
-                      Yukari
-                    </button>
-                  )}
-                  <button
-                    onClick={() => removeParticipant(p.id)}
-                    className="rounded-md border border-white/25 bg-zinc-900 px-2 py-1 text-xs hover:bg-zinc-700"
-                  >
-                    Sil
-                  </button>
-                </div>
-              </li>
-            ))}
-            {queue.length === 0 && (
-              <li className="text-sm text-zinc-500">Henuz katilimci yok.</li>
-            )}
-          </ul>
-          <div className="mt-4 border-t border-white/15 pt-3 text-xs text-zinc-500">
-            Siradaki sarkici: {currentSinger?.name ?? "Bekleniyor"}
-          </div>
-        </motion.section>
+          <h1 className="text-4xl font-light tracking-tight text-white">
+            Şarkı Seçimi ve Katılımcılar
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            Spotify&apos;da ara, katılımcını belirle, şarkını seç.
+          </p>
+        </motion.div>
 
-        {/* Spotify Search */}
-        <motion.section
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15 }}
-          className="rounded-3xl border border-white/20 bg-[#121212] p-5"
-        >
-          <h2 className="text-xl">Spotify</h2>
-          {!isSpotifyConnected ? (
-            <div className="mt-4">
-              <p className="text-sm text-zinc-400">Once Spotify baglantisi yap.</p>
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {/* Lobby */}
+          <motion.section
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="glass-strong rounded-2xl p-5"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold text-white">Katılımcılar ve Sıra</h2>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder="İsim ekle..."
+                className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500 backdrop-blur-sm transition focus:border-white/40 focus:ring-1 focus:ring-white/20"
+              />
               <button
-                onClick={spotifyLogin}
-                className="mt-3 rounded-xl bg-white px-5 py-2 text-sm font-semibold text-black"
+                onClick={handleAdd}
+                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-white/20"
               >
-                Baglan
+                Ekle
               </button>
             </div>
-          ) : (
-            <>
-              <div className="mt-4 flex gap-2">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Sarki veya sanatci ara"
-                  className="w-full rounded-xl border border-white/25 bg-black px-3 py-2 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white"
-                />
+
+            <ul className="mt-4 max-h-64 space-y-2 overflow-auto pr-1">
+              <AnimatePresence>
+                {queue.map((p, i) => (
+                  <motion.li
+                    key={p.id}
+                    initial={{ opacity: 0, x: -10, height: 0 }}
+                    animate={{ opacity: 1, x: 0, height: "auto" }}
+                    exit={{ opacity: 0, x: 10, height: 0 }}
+                    className="flex items-center justify-between rounded-xl bg-black/40 px-4 py-2.5 text-sm backdrop-blur-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 text-xs font-bold text-zinc-300">
+                        {i + 1}
+                      </span>
+                      <span className="font-medium text-white">{p.name}</span>
+                      {i === 0 && (
+                        <span className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                          Sıradaki
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      {i > 0 && (
+                        <button
+                          onClick={() => moveQueue(p.id, -1)}
+                          className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs text-zinc-300 transition hover:bg-white/10 hover:text-white"
+                        >
+                          ↑
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeParticipant(p.id)}
+                        className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs text-zinc-300 transition hover:bg-red-500/20 hover:text-red-400"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+              {queue.length === 0 && (
+                <li className="py-4 text-center text-sm text-zinc-500">Henüz katılımcı yok.</li>
+              )}
+            </ul>
+
+            <div className="mt-4 border-t border-white/10 pt-3">
+              <p className="text-xs text-zinc-500">
+                Sıradaki şarkıcı:{" "}
+                <span className="font-semibold text-zinc-300">
+                  {currentSinger?.name ?? "Bekleniyor"}
+                </span>
+              </p>
+            </div>
+          </motion.section>
+
+          {/* Spotify Search */}
+          <motion.section
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="glass-strong rounded-2xl p-5"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold text-white">Spotify</h2>
+            </div>
+
+            {!isSpotifyConnected ? (
+              <div className="flex flex-col items-center gap-4 py-8">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
+                  <svg className="h-8 w-8 text-zinc-400" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-zinc-400">Önce Spotify bağlantısı yap.</p>
                 <button
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                  className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black disabled:opacity-50"
+                  onClick={spotifyLogin}
+                  className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg hover:shadow-violet-500/25"
                 >
-                  {isSearching ? "..." : "Ara"}
+                  Spotify'a Bağlan
                 </button>
               </div>
-              <ul className="mt-4 max-h-64 space-y-2 overflow-auto pr-1">
-                {tracks.map((track) => (
-                  <li
-                    key={track.id}
-                    className={`rounded-xl border px-3 py-2 text-sm transition ${
-                      selectedTrack?.id === track.id
-                        ? "border-white bg-zinc-800 text-white"
-                        : "border-white/25 bg-black text-white"
-                    }`}
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    placeholder="Şarkı veya sanatçı ara..."
+                    className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500 backdrop-blur-sm transition focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    disabled={isSearching}
+                    className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black transition-all hover:scale-105 disabled:opacity-50"
                   >
-                    <button
-                      className="w-full text-left"
-                      onClick={() => setSelectedTrack(track)}
-                    >
-                      <div className="font-semibold">{track.name}</div>
-                      <div className="text-xs text-zinc-400">
-                        {track.artist} - {track.album}
-                      </div>
-                    </button>
-                  </li>
-                ))}
-                {tracks.length === 0 && (
-                  <li className="text-sm text-zinc-500">Sonuc yok.</li>
-                )}
-              </ul>
-            </>
-          )}
-        </motion.section>
-      </div>
+                    {isSearching ? "..." : "Ara"}
+                  </button>
+                </div>
 
-      <div className="mt-10 text-center">
-        <a
-          href="/karaoke"
-          className="inline-block rounded-xl border border-white/30 bg-white px-8 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                <ul className="mt-4 max-h-72 space-y-2 overflow-auto pr-1">
+                  <AnimatePresence>
+                    {tracks.map((track) => {
+                      const active = selectedTrack?.id === track.id;
+                      return (
+                        <motion.li
+                          key={track.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`group cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all ${
+                            active
+                              ? "border-white/40 bg-white/10 shadow-lg shadow-white/5"
+                              : "border-white/10 bg-black/40 hover:border-white/25 hover:bg-white/5"
+                          }`}
+                          onClick={() => setSelectedTrack(track)}
+                        >
+                          <div className="font-semibold text-white">{track.name}</div>
+                          <div className="mt-1 text-xs text-zinc-400">
+                            {track.artist} · {track.album}
+                          </div>
+                        </motion.li>
+                      );
+                    })}
+                  </AnimatePresence>
+                  {tracks.length === 0 && !isSearching && (
+                    <li className="py-4 text-center text-sm text-zinc-500">Sonuç yok.</li>
+                  )}
+                </ul>
+              </>
+            )}
+          </motion.section>
+        </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="mt-10 text-center"
         >
-          Karaoke Baslat
-        </a>
+          <Link
+            href="/karaoke"
+            className="group inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-semibold text-black transition-all hover:scale-105 hover:shadow-xl hover:shadow-white/20"
+          >
+            Karaoke Başlat
+            <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </Link>
+        </motion.div>
       </div>
     </div>
   );
