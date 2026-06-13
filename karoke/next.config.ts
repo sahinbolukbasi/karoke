@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   },
   basePath: isGithubActions && repositoryName ? `/${repositoryName}` : "",
   assetPrefix: isGithubActions && repositoryName ? `/${repositoryName}/` : "",
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;
