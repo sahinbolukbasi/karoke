@@ -1,6 +1,7 @@
 import { SpotifyTrack } from "@/types/karaoke";
 
 const SPOTIFY_ACCOUNTS_URL = "https://accounts.spotify.com/authorize";
+const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 const SPOTIFY_API_URL = "https://api.spotify.com/v1";
 
 const SPOTIFY_SCOPES = [
@@ -13,11 +14,43 @@ const SPOTIFY_SCOPES = [
   "playlist-read-collaborative",
 ];
 
-export function buildSpotifyAuthUrl(clientId: string, redirectUri: string): string {
+/**
+ * PKCE: Rastgele code_verifier üretir (43-128 karakter).
+ */
+export function generateCodeVerifier(): string {
+  const array = new Uint8Array(64);
+  crypto.getRandomValues(array);
+  return base64UrlEncode(array);
+}
+
+/**
+ * PKCE: code_verifier'dan SHA-256 code_challenge üretir.
+ */
+export async function generateCodeChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function base64UrlEncode(buffer: Uint8Array): string {
+  return btoa(String.fromCharCode(...buffer))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+export function buildSpotifyAuthUrl(
+  clientId: string,
+  redirectUri: string,
+  codeChallenge: string,
+): string {
   const params = new URLSearchParams({
     client_id: clientId,
-    response_type: "token",
+    response_type: "code",
     redirect_uri: redirectUri,
+    code_challenge_method: "S256",
+    code_challenge: codeChallenge,
     scope: SPOTIFY_SCOPES.join(" "),
     show_dialog: "true",
   });
@@ -25,10 +58,50 @@ export function buildSpotifyAuthUrl(clientId: string, redirectUri: string): stri
   return `${SPOTIFY_ACCOUNTS_URL}?${params.toString()}`;
 }
 
-export function parseTokenFromHash(hash: string): string | null {
-  const raw = hash.startsWith("#") ? hash.slice(1) : hash;
-  const params = new URLSearchParams(raw);
-  return params.get("access_token");
+/**
+ * Yetkilendirme kodunu Spotify API'ye gönderip access_token alır.
+ */
+export async function exchangeCodeForToken(
+  code: string,
+  redirectUri: string,
+  codeVerifier: string,
+  clientId: string,
+): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  const body = new URLSearchParams({
+    client_id: clientId,
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: redirectUri,
+    code_verifier: codeVerifier,
+  });
+
+  const response = await fetch(SPOTIFY_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Token alinamadi: ${err}`);
+  }
+
+  const data = await response.json();
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresIn: data.expires_in,
+  };
+}
+
+/**
+ * URL'deki authorization_code parametresini döndürür.
+ */
+export function parseCodeFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("code");
 }
 
 export async function searchSpotifyTracks(token: string, query: string): Promise<SpotifyTrack[]> {
