@@ -14,6 +14,8 @@ import { buildDemoLyrics, getActiveLyricIndex } from "@/lib/lyrics";
 import { searchSpotifyTracks, startSpotifyPlayback } from "@/lib/spotify";
 import { AudioTelemetry, Participant, PerformanceScore, SpotifyTrack } from "@/types/karaoke";
 
+type ModalSection = "lobby" | "spotify" | "lyrics" | "performance";
+
 function reorderQueue(queue: Participant[], id: string, direction: -1 | 1): Participant[] {
   const index = queue.findIndex((participant) => participant.id === id);
   const target = index + direction;
@@ -41,6 +43,7 @@ export function KaraokeApp() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [telemetry, setTelemetry] = useState<AudioTelemetry | undefined>();
   const [score, setScore] = useState<PerformanceScore | undefined>();
+  const [activeModal, setActiveModal] = useState<ModalSection | null>(null);
 
   const { token, isConnected, login, logout } = useSpotifyAuth();
   const { deviceId, isReady: spotifyReady, error: spotifyError } = useSpotifyPlayer(token);
@@ -148,64 +151,153 @@ export function KaraokeApp() {
     rotateQueue();
   };
 
+  const sectionCards: Array<{ id: ModalSection; title: string; description: string }> = [
+    {
+      id: "lobby",
+      title: "Lobi",
+      description: "Katilimcilari ekle, sirayi duzenle.",
+    },
+    {
+      id: "spotify",
+      title: "Spotify",
+      description: "Sarki ara, sec ve oynatmaya hazirla.",
+    },
+    {
+      id: "lyrics",
+      title: "Lyrics",
+      description: "Akan sozleri net bir alanda takip et.",
+    },
+    {
+      id: "performance",
+      title: "Performans",
+      description: "Bluetooth, analiz ve puanlama adimi.",
+    },
+  ];
+
+  const closeModal = () => setActiveModal(null);
+
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_15%_20%,#1ac7ff_0%,#0d1132_28%,transparent_55%),radial-gradient(circle_at_85%_15%,#ff42b6_0%,#170f3f_35%,transparent_60%),radial-gradient(circle_at_50%_90%,#ffd365_0%,#190e35_26%,transparent_56%),linear-gradient(160deg,#05060f_0%,#0d122d_52%,#1b0b2e_100%)] px-4 py-8 text-white md:px-10">
+    <div className="min-h-screen bg-[#0a0a0a] px-4 py-8 text-white md:px-10">
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-auto mb-8 max-w-6xl rounded-3xl border border-white/20 bg-white/10 p-6 text-center shadow-2xl backdrop-blur-xl"
+        className="mx-auto mb-8 max-w-6xl rounded-3xl border border-white/20 bg-[#111111] p-6 text-center shadow-2xl"
       >
-        <p className="text-xs uppercase tracking-[0.38em] text-cyan-100/90">Neon Stage</p>
-        <h1 className="mt-2 text-3xl font-black uppercase tracking-wide md:text-5xl">Art Karaoke Platformu</h1>
-        <p className="mt-3 text-sm text-cyan-50/85 md:text-base">
-          Lobi, Spotify entegrasyonu, Bluetooth cihaz baglantisi, ritim analizi ve eglenceli puanlama tek sahnede.
+        <p className="text-xs uppercase tracking-[0.28em] text-zinc-300">Karaoke Suite</p>
+        <h1 className="mt-2 text-3xl md:text-5xl">Monochrome Stage</h1>
+        <p className="mt-3 text-sm text-zinc-300 md:text-base">
+          Siyah-beyaz, sade ve modern panel mimarisi. Tum bolumler ayri popup pencerelerde.
         </p>
       </motion.header>
 
-      <main className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-2">
-        <LobbyPanel
-          participants={participants}
-          queue={queue}
-          newName={newName}
-          onNameChange={setNewName}
-          onAddParticipant={addParticipant}
-          onRemoveParticipant={removeParticipant}
-          onMoveQueueUp={(id) => setQueue((prev) => reorderQueue(prev, id, -1))}
-          onMoveQueueDown={(id) => setQueue((prev) => reorderQueue(prev, id, 1))}
-        />
+      <main className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.1fr_2fr]">
+        <section className="rounded-3xl border border-white/20 bg-[#101010] p-6">
+          <h2 className="text-xl">Gece Ozeti</h2>
+          <div className="mt-4 space-y-3 text-sm text-zinc-300">
+            <p>Katilimci sayisi: {participants.length}</p>
+            <p>Siradaki: {singer?.name ?? "Yok"}</p>
+            <p>Secilen sarki: {selectedTrack?.name ?? "Yok"}</p>
+            <p>Spotify: {isConnected ? "Bagli" : "Bagli degil"}</p>
+            <p>Bluetooth: {bluetoothState.isConnected ? "Bagli" : "Bagli degil"}</p>
+            <p>Son puan: {score?.total ?? "-"}</p>
+          </div>
+        </section>
 
-        <SpotifyPanel
-          isSpotifyConnected={isConnected}
-          spotifyReady={spotifyReady}
-          spotifyError={spotifyError}
-          query={query}
-          tracks={tracks}
-          selectedTrack={selectedTrack}
-          loading={isSearching}
-          onQueryChange={setQuery}
-          onSearch={searchTracks}
-          onTrackSelect={setSelectedTrack}
-          onLogin={login}
-          onLogout={logout}
-        />
-
-        <LyricsPanel lines={lyrics} activeIndex={activeLyricIndex} elapsedSeconds={elapsedMs / 1000} />
-
-        <PerformancePanel
-          singerName={singer?.name ?? "Beklemede"}
-          selectedTrack={selectedTrack}
-          bluetoothState={bluetoothState}
-          onBluetoothConnect={connectBluetooth}
-          onBluetoothDisconnect={disconnectBluetooth}
-          isRunning={isRunning}
-          isAnalyzing={isAnalyzing}
-          audioError={audioError}
-          telemetry={telemetry}
-          score={score}
-          onStart={startPerformance}
-          onStop={stopPerformance}
-        />
+        <section className="rounded-3xl border border-white/20 bg-[#101010] p-6">
+          <h2 className="text-xl">Bolumler</h2>
+          <p className="mt-1 text-sm text-zinc-400">Her bolumu ayri pencerede acarak duzenli calis.</p>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {sectionCards.map((section) => (
+              <article key={section.id} className="rounded-2xl border border-white/15 bg-black p-4">
+                <h3 className="text-lg">{section.title}</h3>
+                <p className="mt-1 text-sm text-zinc-400">{section.description}</p>
+                <button
+                  onClick={() => setActiveModal(section.id)}
+                  className="mt-4 rounded-xl border border-white/30 bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
+                >
+                  Popupu Ac
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
       </main>
+
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-3xl border border-white/25 bg-[#111111] p-5"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl">
+                {activeModal === "lobby" && "Lobi"}
+                {activeModal === "spotify" && "Spotify"}
+                {activeModal === "lyrics" && "Lyrics"}
+                {activeModal === "performance" && "Performans"}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="rounded-xl border border-white/30 px-3 py-2 text-sm hover:bg-white hover:text-black"
+              >
+                Kapat
+              </button>
+            </div>
+
+            {activeModal === "lobby" && (
+              <LobbyPanel
+                participants={participants}
+                queue={queue}
+                newName={newName}
+                onNameChange={setNewName}
+                onAddParticipant={addParticipant}
+                onRemoveParticipant={removeParticipant}
+                onMoveQueueUp={(id) => setQueue((prev) => reorderQueue(prev, id, -1))}
+                onMoveQueueDown={(id) => setQueue((prev) => reorderQueue(prev, id, 1))}
+              />
+            )}
+
+            {activeModal === "spotify" && (
+              <SpotifyPanel
+                isSpotifyConnected={isConnected}
+                spotifyReady={spotifyReady}
+                spotifyError={spotifyError}
+                query={query}
+                tracks={tracks}
+                selectedTrack={selectedTrack}
+                loading={isSearching}
+                onQueryChange={setQuery}
+                onSearch={searchTracks}
+                onTrackSelect={setSelectedTrack}
+                onLogin={login}
+                onLogout={logout}
+              />
+            )}
+
+            {activeModal === "lyrics" && (
+              <LyricsPanel lines={lyrics} activeIndex={activeLyricIndex} elapsedSeconds={elapsedMs / 1000} />
+            )}
+
+            {activeModal === "performance" && (
+              <PerformancePanel
+                singerName={singer?.name ?? "Beklemede"}
+                selectedTrack={selectedTrack}
+                bluetoothState={bluetoothState}
+                onBluetoothConnect={connectBluetooth}
+                onBluetoothDisconnect={disconnectBluetooth}
+                isRunning={isRunning}
+                isAnalyzing={isAnalyzing}
+                audioError={audioError}
+                telemetry={telemetry}
+                score={score}
+                onStart={startPerformance}
+                onStop={stopPerformance}
+              />
+            )}
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
