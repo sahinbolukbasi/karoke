@@ -31,6 +31,10 @@ export function useWebBluetooth() {
   const [error, setError] = useState("");
 
   const isSupported = useMemo(() => {
+    if (typeof navigator === "undefined") {
+      return false;
+    }
+
     const nav = navigator as BluetoothNavigator;
     return Boolean(nav.bluetooth?.requestDevice);
   }, []);
