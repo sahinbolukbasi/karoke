@@ -37,28 +37,28 @@ export function PerformancePanel({
       initial={{ opacity: 0, y: 26 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.24 }}
-      className="rounded-3xl border border-white/30 bg-white/15 p-5 shadow-2xl backdrop-blur-xl"
+      className="rounded-3xl border border-white/20 bg-[#121212] p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold tracking-wide text-white">Performans ve Puanlama</h2>
-          <p className="mt-1 text-sm text-cyan-100/90">
+          <p className="mt-1 text-sm text-zinc-300">
             Simdiki sahne: <span className="font-semibold text-white">{singerName || "Secilmedi"}</span>
           </p>
-          <p className="text-xs text-fuchsia-100/90">Parca: {selectedTrack?.name ?? "Secilmedi"}</p>
+          <p className="text-xs text-zinc-400">Parca: {selectedTrack?.name ?? "Secilmedi"}</p>
         </div>
 
         {!isRunning ? (
           <button
             onClick={onStart}
-            className="rounded-xl bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-200"
+            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
           >
             Performansi Baslat
           </button>
         ) : (
           <button
             onClick={onStop}
-            className="rounded-xl bg-rose-300 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-rose-200"
+            className="rounded-xl border border-white/25 bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
           >
             Bitir ve Puanla
           </button>
@@ -66,8 +66,8 @@ export function PerformancePanel({
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-white/25 bg-black/25 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-cyan-100">Bluetooth Baglanti</h3>
+        <div className="rounded-2xl border border-white/25 bg-black p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-zinc-300">Bluetooth Baglanti</h3>
           <p className="mt-2 text-sm text-white/85">
             Durum: {bluetoothState.isConnected ? `Bagli (${bluetoothState.deviceName})` : "Bagli degil"}
           </p>
@@ -77,21 +77,21 @@ export function PerformancePanel({
             <button
               onClick={onBluetoothConnect}
               disabled={!bluetoothState.isSupported}
-              className="rounded-lg bg-cyan-300 px-3 py-2 text-xs font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40"
             >
               Mikrofon/Hoparlor Bagla
             </button>
             <button
               onClick={onBluetoothDisconnect}
-              className="rounded-lg bg-zinc-200/90 px-3 py-2 text-xs font-semibold text-slate-900"
+              className="rounded-lg border border-white/25 bg-zinc-900 px-3 py-2 text-xs font-semibold text-white"
             >
               Baglantiyi Kes
             </button>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/25 bg-black/25 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-cyan-100">Ses Analizi</h3>
+        <div className="rounded-2xl border border-white/25 bg-black p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-zinc-300">Ses Analizi</h3>
           <p className="mt-2 text-sm text-white/85">Durum: {isAnalyzing ? "Mikrofon dinleniyor" : "Beklemede"}</p>
           {audioError && <p className="mt-1 text-xs text-rose-200">{audioError}</p>}
           {telemetry && (
@@ -109,7 +109,7 @@ export function PerformancePanel({
         <motion.div
           initial={{ opacity: 0, y: 14, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="mt-5 rounded-2xl border border-amber-200/70 bg-gradient-to-r from-amber-200/80 via-fuchsia-200/75 to-cyan-200/80 p-4 text-slate-950"
+          className="mt-5 rounded-2xl border border-white/35 bg-white p-4 text-black"
         >
           <div className="text-4xl font-black">{score.total}/100</div>
           <p className="mt-1 text-sm font-semibold">{score.message}</p>
